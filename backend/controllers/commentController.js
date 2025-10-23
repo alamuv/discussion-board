@@ -145,7 +145,7 @@ const getComments = async (req, res) => {
     const maskedComments = maskDeletedComments(paginatedComments);
 
     res.json({
-      data: maskedComments,
+      comments: maskedComments,
       pagination: {
         page,
         limit,

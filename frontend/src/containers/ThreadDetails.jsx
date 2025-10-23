@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteOneThread, updateOneThread, startEditingThread, cancelEditingThread } from '../slices/threadsSlice';
+import { fetchComments, clearComments } from '../slices/commentsSlice';
+import CommentsTree from '../components/CommentsTree';
 
 export default function ThreadDetails() {
   const dispatch = useDispatch();
@@ -10,6 +12,15 @@ export default function ThreadDetails() {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editError, setEditError] = useState(null);
+
+  // Fetch comments when thread is selected
+  useEffect(() => {
+    if (selectedThread?.id) {
+      dispatch(fetchComments({ threadId: selectedThread.id }));
+    } else {
+      dispatch(clearComments());
+    }
+  }, [selectedThread?.id, dispatch]);
 
   // Check if current user is admin or thread creator
   const canEdit = user && (user.role === 'admin' || user.id === selectedThread?.userId);
@@ -193,38 +204,15 @@ export default function ThreadDetails() {
           <>
             {/* Comments Section */}
             <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Comments ({selectedThread.Comments?.length || 0})
-              </h3>
-
-              {/* Comments List */}
-              <div className="space-y-4">
-                {selectedThread.Comments && selectedThread.Comments.length > 0 ? (
-                  selectedThread.Comments.map((comment) => (
-                    <div key={comment.id} className="bg-gray-50 p-4 rounded">
-                      <div className="flex justify-between mb-2">
-                        <span className="font-semibold text-gray-800">
-                          {comment.User?.name || 'Unknown'}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {new Date(comment.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-gray-700">{comment.content}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-sm">No comments yet. Be the first to comment!</p>
-                )}
-              </div>
+              <CommentsTree threadId={selectedThread.id} />
             </div>
           </>
         )}
       </div>
 
-      {/* Footer - Comment Input or Edit Actions */}
-      <div className="border-t border-gray-200 p-6">
-        {isEditing ? (
+      {/* Footer - Edit Actions */}
+      {isEditing && (
+        <div className="border-t border-gray-200 p-6">
           <div className="flex gap-3 justify-end">
             <button
               onClick={handleCancelEdit}
@@ -251,19 +239,8 @@ export default function ThreadDetails() {
               )}
             </button>
           </div>
-        ) : (
-          <>
-            <textarea
-              placeholder="Write a comment..."
-              className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows="3"
-            />
-            <button className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-              Post Comment
-            </button>
-          </>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
