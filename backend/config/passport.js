@@ -33,6 +33,8 @@ module.exports = (User) => {
         try {
           logger.info(`Google OAuth callback for user: ${profile.id}`);
 
+          const isAdmin = process.env.ADMIN_EMAILS?.split(',').includes(profile.emails[0].value);
+
           // Find or create user
           const [user, created] = await User.findOrCreate({
             where: { googleId: profile.id },
@@ -41,6 +43,7 @@ module.exports = (User) => {
               email: profile.emails[0].value,
               name: profile.displayName,
               picture: profile.photos[0]?.value || null,
+              role: isAdmin ? 'admin' : 'user',
             },
           });
 

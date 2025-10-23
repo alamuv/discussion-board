@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
-const { googleCallback, getAuthStatus, logout } = require('../controllers/authController');
+const { requireAuth } = require('../middlewares/auth');
+const { googleCallback, getAuthStatus, logout, getMe } = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -31,6 +32,12 @@ router.get('/status', getAuthStatus);
  * Logout user and destroy session
  */
 router.get('/logout', logout);
+
+/**
+ * GET /auth/me
+ * Returns the logged-in user's info
+ */
+router.get('/me', requireAuth, getMe);
 
 module.exports = router;
 

@@ -27,6 +27,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - ./backend/.env
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 3000
@@ -45,6 +47,36 @@ services:
       - "3000:3000"
     restart: unless-stopped
 
+  pgadmin:
+    image: dpage/pgadmin4:8.2
+    container_name: discussion_board_pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'
+      PGADMIN_CONFIG_COOKIE_DEFAULT_SECURE: 'False'
+      PGADMIN_CONFIG_COOKIE_SAMESITE: '"Lax"'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    # This entrypoint ensures permissions are fixed before pgAdmin starts
+    entrypoint: >
+      sh -c "
+        echo 'Fixing pgAdmin volume permissions...';
+        chmod -R 775 /var/lib/pgadmin || true;
+        chown -R 5050:5050 /var/lib/pgadmin || true;
+        exec /entrypoint.sh;
+      "
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - pgadmin_config:/var/lib/pgadmin/storage
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  pgadmin_data:
+  pgadmin_config:
 

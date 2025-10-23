@@ -4,6 +4,7 @@ const session = require('express-session');
 const passport = require('passport');
 const pgSession = require('connect-pg-simple')(session);
 const { Pool } = require('pg');
+const cors = require('cors');
 require('dotenv').config();
 
 const logger = require('./utils/logger');
@@ -17,6 +18,10 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(helmet());
+app.use(cors({
+  origin: "http://localhost:5173", // your React app URL
+  credentials: true, // needed if using cookies/sessions
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -30,12 +35,37 @@ const startServer = async () => {
     const sequelize = await getSequelize();
     logger.info('Database connection initialized successfully');
 
-    // Define User model
+    // Define models
     const User = require('./models/User')(sequelize);
-    await sequelize.sync({ alter: false });
+    const Thread = require('./models/Thread')(sequelize);
+    const Comment = require('./models/Comment')(sequelize);
+    logger.info('Models defined');
+
+    // Set up associations
+    // User associations
+    User.hasMany(Thread, { foreignKey: 'userId' });
+    Thread.belongsTo(User, { foreignKey: 'userId' });
+
+    User.hasMany(Comment, { foreignKey: 'userId' });
+    Comment.belongsTo(User, { foreignKey: 'userId' });
+
+    // Thread associations
+    Thread.hasMany(Comment, { foreignKey: 'threadId', onDelete: 'CASCADE' });
+    Comment.belongsTo(Thread, { foreignKey: 'threadId' });
+
+    // Comment self-association (for nested replies)
+    Comment.hasMany(Comment, { foreignKey: 'parentId', as: 'replies' });
+    Comment.belongsTo(Comment, { foreignKey: 'parentId', as: 'parent' });
+
+    logger.info('Model associations set up');
+
+    // Sync database
+    await sequelize.sync({ alter: true });
     logger.info('Database models synced');
 
     // Initialize Passport with User model
+    const users = await User.findAll();
+    console.log(users);
     initPassport(User);
     logger.info('Passport initialized');
 

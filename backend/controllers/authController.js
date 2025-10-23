@@ -8,7 +8,7 @@ const logger = require('../utils/logger');
 const googleCallback = (req, res) => {
   logger.info(`User authenticated: ${req.user.email}`);
   // Redirect to frontend after successful login
-  res.redirect('/');
+  res.redirect('http://localhost:5173');
 };
 
 /**
@@ -47,9 +47,24 @@ const logout = (req, res) => {
   });
 };
 
+/**
+ * GET /auth/me
+ * Returns the logged-in user's info
+ * Requires authentication (handled by requireAuth middleware)
+ */
+const getMe = (req, res) => {
+  res.json({
+    id: req.user.id,
+    email: req.user.email,
+    name: req.user.name,
+    picture: req.user.picture,
+  });
+};
+
 module.exports = {
   googleCallback,
   getAuthStatus,
   logout,
+  getMe,
 };
 

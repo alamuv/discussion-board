@@ -1,35 +1,29 @@
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  const User = sequelize.define(
-    'User',
+  const Thread = sequelize.define(
+    'Thread',
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      googleId: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-      },
-      email: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-      },
-      name: {
+      title: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      picture: {
-        type: DataTypes.STRING,
-        allowNull: true,
+      content: {
+        type: DataTypes.TEXT,
+        allowNull: false,
       },
-      role: {
-        type: DataTypes.STRING,
-        defaultValue: 'user',
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -41,11 +35,11 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: 'users',
+      tableName: 'threads',
       timestamps: true,
     }
   );
 
-  return User;
+  return Thread;
 };
 
