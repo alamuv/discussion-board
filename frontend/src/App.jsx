@@ -1,17 +1,24 @@
 import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from './components/Navbar';
-import { checkAuthStatus } from './slices/authSlice';
+import ThreadsLayout from './containers/ThreadsLayout';
+import { checkAuthStatus, getMe } from './slices/authSlice';
 
 function App() {
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.auth);
+  const { loading, authenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
     // Check auth status on app load
     dispatch(checkAuthStatus());
   }, [dispatch]);
+
+  useEffect(() => {
+    // Fetch user details if authenticated
+    if (authenticated) {
+      dispatch(getMe());
+    }
+  }, [authenticated, dispatch]);
 
   if (loading) {
     return (
@@ -28,7 +35,7 @@ function App() {
     <div className="flex flex-col h-screen">
       <Navbar />
       <main className="flex-1 overflow-auto">
-        <Outlet />
+        <ThreadsLayout />
       </main>
     </div>
   );

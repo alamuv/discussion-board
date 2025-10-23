@@ -98,6 +98,7 @@ const createThread = async (req, res) => {
 
     const sequelize = await getSequelize();
     const Thread = sequelize.models.Thread;
+    const User = sequelize.models.User;
 
     const thread = await Thread.create({
       title,
@@ -105,8 +106,18 @@ const createThread = async (req, res) => {
       userId: req.user?.id,
     });
 
+    // Fetch the thread with user information
+    const threadWithUser = await Thread.findByPk(thread.id, {
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'name', 'email', 'picture'],
+        },
+      ],
+    });
+
     logger.info(`Thread created: ${thread.id} by user ${req.user.id}`);
-    res.status(201).json(thread);
+    res.status(201).json(threadWithUser);
   } catch (error) {
     logger.error('Error creating thread', { error: error.message });
     res.status(500).json({ error: 'Failed to create thread' });
