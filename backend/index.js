@@ -1,9 +1,16 @@
 const express = require('express');
 const helmet = require('helmet');
+const session = require('express-session');
+const passport = require('passport');
+const pgSession = require('connect-pg-simple')(session);
+const { Pool } = require('pg');
 require('dotenv').config();
 
 const logger = require('./utils/logger');
 const { getSequelize, closeConnection } = require('./config/database');
+const initPassport = require('./config/passport');
+const authRoutes = require('./routes/auth');
+const apiRoutes = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,16 +20,6 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Basic route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Discussion Board API' });
-});
-
-// Health check endpoint
-app.get('/health', async (req, res) => {
-  res.json({ status: 'healthy' });
-});
-
 // Initialize server
 let server;
 
@@ -30,8 +27,65 @@ const startServer = async () => {
   try {
     // Initialize database connection
     logger.info('Initializing database connection...');
-    await getSequelize();
+    const sequelize = await getSequelize();
     logger.info('Database connection initialized successfully');
+
+    // Define User model
+    const User = require('./models/User')(sequelize);
+    await sequelize.sync({ alter: false });
+    logger.info('Database models synced');
+
+    // Initialize Passport with User model
+    initPassport(User);
+    logger.info('Passport initialized');
+
+    // Session store using PostgreSQL
+    const pgPool = new Pool({
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 5432,
+      database: process.env.DB_NAME || 'discussion_board',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+    });
+
+    // Session middleware
+    app.use(
+      session({
+        store: new pgSession({
+          pool: pgPool,
+          tableName: 'session',
+          createTableIfMissing: true,
+        }),
+        secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        },
+      })
+    );
+
+    // Passport middleware
+    app.use(passport.initialize());
+    app.use(passport.session());
+
+    // Routes
+    app.get('/', (req, res) => {
+      res.json({ message: 'Welcome to Discussion Board API' });
+    });
+
+    app.get('/health', (req, res) => {
+      res.json({ status: 'healthy' });
+    });
+
+    // Authentication routes
+    app.use('/auth', authRoutes);
+
+    // API routes
+    app.use('/api', apiRoutes);
 
     // Start Express server
     server = app.listen(PORT, () => {
