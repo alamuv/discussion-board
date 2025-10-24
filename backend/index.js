@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: "http://localhost:5173", // your React app URL
+  origin: process.env.WEB_URL || 'http://localhost:5173', // your React app URL
   credentials: true, // needed if using cookies/sessions
 }));
 app.use(express.json());
