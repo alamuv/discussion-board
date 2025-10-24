@@ -3,13 +3,13 @@ FROM node:22-alpine
 WORKDIR /app
 
 # Copy package files
-COPY backend/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
-RUN npm install --only=production
+RUN npm ci --only=production
 
 # Copy application code
-COPY backend/. .
+COPY . .
 
 # Expose port
 EXPOSE 3000

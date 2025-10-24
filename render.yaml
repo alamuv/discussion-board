@@ -1,0 +1,75 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: discussion-board-db
+    env: docker
+    dockerfilePath: Dockerfile.postgres
+    buildContext: ./
+    envVars:
+      - key: POSTGRES_DB
+        value: discussion_board
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: PGDATA
+        value: /var/lib/postgresql/data/pgdata
+
+  # Backend API
+  - type: web
+    name: discussion-board-api
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    buildContext: ./backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DB_HOST
+        value: discussion-board-db.internal
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        value: discussion_board
+      - key: DB_USER
+        value: postgres
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      - key: DB_POOL_MAX
+        value: "10"
+      - key: DB_POOL_MIN
+        value: "2"
+      - key: DB_POOL_ACQUIRE
+        value: "30000"
+      - key: DB_POOL_IDLE
+        value: "10000"
+      - key: DB_STATEMENT_TIMEOUT
+        value: "30000"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+    healthCheckPath: /health
+
+  # Frontend Web App
+  - type: web
+    name: discussion-board-web
+    env: docker
+    dockerfilePath: frontend/Dockerfile
+    buildContext: ./frontend
+    envVars:
+      - key: BACKEND_URL
+        value: http://discussion-board-api:3000
+    healthCheckPath: /health
+

@@ -1,0 +1,18 @@
+FROM postgres:16-alpine
+
+# Set default environment variables
+ENV POSTGRES_DB=${POSTGRES_DB:-discussion_board}
+ENV POSTGRES_USER=${POSTGRES_USER:-postgres}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+ENV PGDATA=${PGDATA:-/var/lib/postgresql/data/pgdata}
+
+# Expose PostgreSQL port
+EXPOSE 5432
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 \
+  CMD pg_isready -U ${POSTGRES_USER}
+
+# Start PostgreSQL
+CMD ["postgres"]
+
