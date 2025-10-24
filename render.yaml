@@ -50,7 +50,7 @@ services:
   - type: web
     name: discussion-board-web
     env: docker
-    dockerfilePath: frontend/Dockerfile
+    dockerfilePath: frontend/Dockerfile-render
     buildContext: ./frontend
     envVars:
       - key: BACKEND_URL
