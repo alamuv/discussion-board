@@ -1,25 +1,9 @@
 services:
-  # PostgreSQL Database
-  - type: pserv
-    name: discussion-board-db
-    env: docker
-    dockerfilePath: Dockerfile.postgres
-    buildContext: ./
-    envVars:
-      - key: POSTGRES_DB
-        value: discussion_board
-      - key: POSTGRES_USER
-        value: postgres
-      - key: POSTGRES_PASSWORD
-        generateValue: true
-      - key: PGDATA
-        value: /var/lib/postgresql/data/pgdata
-
   # Backend API
   - type: web
     name: discussion-board-api
     env: docker
-    dockerfilePath: backend/Dockerfile
+    dockerfilePath: backend/Dockerfile-render
     buildContext: ./backend
     envVars:
       - key: NODE_ENV
@@ -27,7 +11,7 @@ services:
       - key: PORT
         value: 3000
       - key: DB_HOST
-        value: discussion-board-db.internal
+        value: postgresql://discussion_board_user:gGxzJBksiJXYXyAeqBT9TuB4B9iFRyfX@dpg-d3tuj58dl3ps73eomri0-a/discussion_board
       - key: DB_PORT
         value: 5432
       - key: DB_NAME
@@ -35,7 +19,7 @@ services:
       - key: DB_USER
         value: postgres
       - key: DB_PASSWORD
-        sync: false
+        value: sync
       - key: DB_SSL
         value: "true"
       - key: DB_POOL_MAX

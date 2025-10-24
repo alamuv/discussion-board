@@ -118,7 +118,7 @@ export default function Comment({ comment, threadId, depth = 0 }) {
         <div className="flex justify-between items-start mb-2">
           <div>
             <p className="font-semibold text-gray-800">
-              {comment.user?.name || 'Unknown'}
+              {comment.user?.name || user?.name || 'Unknown'}
             </p>
             <p className="text-xs text-gray-500">
               {new Date(comment.createdAt).toLocaleDateString()}
