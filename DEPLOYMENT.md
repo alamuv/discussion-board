@@ -38,10 +38,14 @@ docker-compose down
 **Backend (.env or Render dashboard):**
 - `GOOGLE_CLIENT_ID` - Google OAuth client ID
 - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
+- `GOOGLE_CALLBACK_URL` - Google OAuth callback URL (e.g., `https://<your-api>.onrender.com/auth/google/callback`)
 - `SESSION_SECRET` - Session encryption secret (auto-generated on Render)
 - `CLOUDINARY_CLOUD_NAME` - Cloudinary cloud name
 - `CLOUDINARY_API_KEY` - Cloudinary API key
 - `CLOUDINARY_API_SECRET` - Cloudinary API secret
+- `WEB_URL` - Frontend URL (e.g., `https://<your-app>.onrender.com`)
+- `ADMIN_EMAILS` - Comma-separated list of admin email addresses
+- `SECURE_COOKIES` - Set to `true` for production (enables secure cookie flag)
 
 ### Deployment Steps
 
@@ -173,6 +177,7 @@ DB_STATEMENT_TIMEOUT=30000
 # Google OAuth
 GOOGLE_CLIENT_ID=<your-client-id>
 GOOGLE_CLIENT_SECRET=<your-client-secret>
+GOOGLE_CALLBACK_URL=https://<your-api>.onrender.com/auth/google/callback
 
 # Session
 SESSION_SECRET=<generated>
@@ -181,6 +186,15 @@ SESSION_SECRET=<generated>
 CLOUDINARY_CLOUD_NAME=<your-cloud-name>
 CLOUDINARY_API_KEY=<your-api-key>
 CLOUDINARY_API_SECRET=<your-api-secret>
+
+# Frontend
+WEB_URL=https://<your-app>.onrender.com
+
+# Admin
+ADMIN_EMAILS=admin@example.com,admin2@example.com
+
+# Security
+SECURE_COOKIES=true
 ```
 
 ### Frontend

@@ -16,6 +16,12 @@ const apiRoutes = require('./routes/api');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy - needed for production/Docker environments with reverse proxy (Nginx)
+if (process.env.NODE_ENV === 'docker') {
+  logger.info('Setting trust proxy to 1');
+  app.set('trust proxy', 1);
+}
+
 // Middleware
 app.use(helmet());
 app.use(cors({
@@ -60,12 +66,11 @@ const startServer = async () => {
     logger.info('Model associations set up');
 
     // Sync database
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: false });
     logger.info('Database models synced');
 
     // Initialize Passport with User model
     const users = await User.findAll();
-    console.log(users);
     initPassport(User);
     logger.info('Passport initialized');
 
@@ -92,7 +97,8 @@ const startServer = async () => {
         cookie: {
           httpOnly: true,
           sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
+          secure: process.env.NODE_ENV === 'production' || process.env.SECURE_COOKIES === 'true',
+          domain: process.env.COOKIE_DOMAIN || undefined,
           maxAge: 24 * 60 * 60 * 1000, // 24 hours
         },
       })

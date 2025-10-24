@@ -47,7 +47,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
+      NODE_ENV: ${NODE_ENV:-docker}
       PORT: 3000
       DB_HOST: postgres
       DB_PORT: 5432

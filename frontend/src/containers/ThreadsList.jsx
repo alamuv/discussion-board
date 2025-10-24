@@ -7,6 +7,7 @@ export default function ThreadsList() {
   const { threads, selectedThread, loading, error, pagination } = useSelector(
     (state) => state.threads
   );
+  const { authenticated } = useSelector((state) => state.auth);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -43,12 +44,14 @@ export default function ThreadsList() {
   return (
     <div className="w-full md:w-1/3 bg-white border-r border-gray-200 overflow-y-auto">
       <div className="flex flex-col gap-y-4 p-2">
-        <button
-          onClick={() => dispatch(startCreatingThread())}
-          className="w-full bg-blue-600 text-white py-2 rounded mt-2 mb-2 hover:bg-blue-700 transition font-medium"
-        >
-          + New Thread
-        </button>
+        {authenticated && (
+          <button
+            onClick={() => dispatch(startCreatingThread())}
+            className="w-full bg-blue-600 text-white py-2 rounded mt-2 mb-2 hover:bg-blue-700 transition font-medium"
+          >
+            + New Thread
+          </button>
+        )}
 
         {/* Thread List */}
         <div className="space-y-2">

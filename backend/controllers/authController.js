@@ -1,4 +1,6 @@
 const logger = require('../utils/logger');
+const dotenv = require('dotenv');
+dotenv.config();
 
 /**
  * GET /auth/google/callback
@@ -8,7 +10,7 @@ const logger = require('../utils/logger');
 const googleCallback = (req, res) => {
   logger.info(`User authenticated: ${req.user.email}`);
   // Redirect to frontend after successful login
-  res.redirect('http://localhost:5173');
+  res.redirect(process.env.WEB_URL);
 };
 
 /**
