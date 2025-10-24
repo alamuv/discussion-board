@@ -16,11 +16,12 @@ export const fetchComments = createAsyncThunk(
 
 export const createNewComment = createAsyncThunk(
   'comments/createNew',
-  async ({ threadId, content, parentId }, { rejectWithValue }) => {
+  async ({ threadId, content, parentId, attachments }, { rejectWithValue }) => {
     try {
       const data = await commentsService.createComment(threadId, {
         content,
         parentId: parentId || null,
+        attachments: attachments || [],
       });
       return data;
     } catch (error) {

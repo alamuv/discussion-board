@@ -2,6 +2,7 @@ const express = require('express');
 const threadsRoutes = require('./threads');
 const threadCommentsRoutes = require('./threadComments');
 const commentsRoutes = require('./comments');
+const uploadRoutes = require('./upload');
 
 const router = express.Router();
 
@@ -28,5 +29,11 @@ router.use('/threads/:threadId/comments', threadCommentsRoutes);
  * DELETE /api/comments/:id - Delete comment (auth required)
  */
 router.use('/comments', commentsRoutes);
+
+/**
+ * Upload routes
+ * POST /api/upload - Upload image to Cloudinary (auth required)
+ */
+router.use('/upload', uploadRoutes);
 
 module.exports = router;

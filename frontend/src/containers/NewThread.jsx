@@ -1,13 +1,45 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { cancelCreatingThread, createNewThread } from '../slices/threadsSlice';
+import { uploadImage, validateImageFile } from '../services/uploadService';
 
 export default function NewThread() {
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.threads);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [attachments, setAttachments] = useState([]);
+  const [uploadError, setUploadError] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setUploadError(validation.error);
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      const result = await uploadImage(file);
+      setAttachments([...attachments, { url: result.url, type: result.type }]);
+    } catch (err) {
+      setUploadError(err?.message || 'Failed to upload image');
+    } finally {
+      setUploading(false);
+      e.target.value = ''; // Reset file input
+    }
+  };
+
+  const handleRemoveAttachment = (index) => {
+    setAttachments(attachments.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,12 +61,14 @@ export default function NewThread() {
         createNewThread({
           title: title.trim(),
           content: content.trim(),
+          attachments,
         })
       ).unwrap();
 
       // Reset form - the thunk handlers will close creation mode and set selectedThread
       setTitle('');
       setContent('');
+      setAttachments([]);
     } catch (err) {
       setError(err?.message || 'Failed to create thread');
       console.error('Error creating thread:', err);
@@ -96,11 +130,72 @@ export default function NewThread() {
             placeholder="Write your thread content here..."
             rows="10"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            disabled={loading}
+            disabled={loading || uploading}
           />
           <p className="text-xs text-gray-500 mt-1">
             {content.length}/5000 characters
           </p>
+        </div>
+
+        {/* Upload Error */}
+        {uploadError && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700 text-sm">{uploadError}</p>
+          </div>
+        )}
+
+        {/* Attachments Section */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Attachments (Images)
+          </label>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              disabled={loading || uploading}
+              className="hidden"
+              id="file-input"
+            />
+            <label htmlFor="file-input" className="cursor-pointer">
+              <div className="flex flex-col items-center gap-2">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <p className="text-sm text-gray-600">
+                  {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+                </p>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF, WebP up to 5MB</p>
+              </div>
+            </label>
+          </div>
+
+          {/* Attachment Previews */}
+          {attachments.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              {attachments.map((attachment, index) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={attachment.url}
+                    alt={`Attachment ${index + 1}`}
+                    className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveAttachment(index)}
+                    disabled={loading || uploading}
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition disabled:opacity-50"
+                    title="Remove attachment"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </form>
 

@@ -87,10 +87,12 @@ const getThread = async (req, res) => {
 /**
  * POST /api/threads
  * Create a new thread (requires authentication)
+ * Body: { title, content, attachments? }
+ * attachments: array of { url, type } objects
  */
 const createThread = async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, attachments } = req.body;
 
     if (!title || !content) {
       return res.status(400).json({ error: 'Title and content are required' });
@@ -104,6 +106,7 @@ const createThread = async (req, res) => {
       title,
       content,
       userId: req.user?.id,
+      attachments: attachments || [],
     });
 
     // Fetch the thread with user information

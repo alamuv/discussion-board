@@ -26,6 +26,7 @@ const getComments = async (req, res) => {
           c."userId",
           c."parentId",
           c.content,
+          c.attachments,
           c."isDeleted",
           c."createdAt",
           c."updatedAt",
@@ -51,6 +52,7 @@ const getComments = async (req, res) => {
           c."userId",
           c."parentId",
           c.content,
+          c.attachments,
           c."isDeleted",
           c."createdAt",
           c."updatedAt",
@@ -101,6 +103,7 @@ const getComments = async (req, res) => {
         userId: row.userId,
         parentId: row.parentId,
         content: row.content,
+        attachments: row.attachments || [],
         isDeleted: row.isDeleted,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
@@ -162,10 +165,12 @@ const getComments = async (req, res) => {
 /**
  * POST /api/threads/:threadId/comments
  * Create a new comment (requires authentication)
+ * Body: { content, parentId?, attachments? }
+ * attachments: array of { url, type } objects
  */
 const createComment = async (req, res) => {
   try {
-    const { content, parentId } = req.body;
+    const { content, parentId, attachments } = req.body;
 
     if (!content) {
       return res.status(400).json({ error: 'Content is required' });
@@ -194,6 +199,7 @@ const createComment = async (req, res) => {
       userId: req.user.id,
       parentId: parentId || null,
       content,
+      attachments: attachments || [],
     });
 
     logger.info(`Comment created: ${comment.id} by user ${req.user.id}`);

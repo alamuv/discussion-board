@@ -37,6 +37,12 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      attachments: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: [],
+        comment: 'Array of {url, type} objects for uploaded images',
+      },
       isDeleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

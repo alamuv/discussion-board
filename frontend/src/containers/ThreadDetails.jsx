@@ -147,7 +147,7 @@ export default function ThreadDetails() {
           </div>
         ) : (
           <>
-            <div className="flex justify-between items-start mb-2">
+            <div className="flex justify-between items-start mb-1">
               <h1 className="text-2xl font-bold text-gray-800">
                 {selectedThread.title}
               </h1>
@@ -156,7 +156,7 @@ export default function ThreadDetails() {
                   <button
                     onClick={handleStartEdit}
                     disabled={loading}
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2 rounded transition disabled:opacity-50"
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-1 rounded transition disabled:opacity-50"
                     title="Edit thread"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -187,7 +187,7 @@ export default function ThreadDetails() {
       </div>
 
       {/* Thread Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 pt-4">
         {isEditing ? (
           <textarea
             value={editContent}
@@ -197,7 +197,38 @@ export default function ThreadDetails() {
             disabled={loading}
           />
         ) : (
-          <p className="text-gray-700 mb-6">{selectedThread.content}</p>
+          <>
+            <p className="text-gray-700 mb-6">{selectedThread.content}</p>
+
+            {/* Thread Attachments */}
+            {selectedThread.attachments && selectedThread.attachments.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Attachments</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {selectedThread.attachments.map((attachment, index) => (
+                    <a
+                      key={index}
+                      href={attachment.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative overflow-hidden rounded-lg border border-gray-200 hover:border-blue-400 transition"
+                    >
+                      <img
+                        src={attachment.url}
+                        alt={`Attachment ${index + 1}`}
+                        className="w-full h-40 object-cover group-hover:scale-105 transition"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {!isEditing && (
